@@ -1,0 +1,24 @@
+
+NOTE:
+The shellcode used in this exercise was not the one I made for the week 2 deliverable. The one I delivered didn't work in this assignment - probably because of some NULs not being set correctly. Instead of correcting it I used a solution posted on the Absalon forum by Niklas Høj.
+
+2) A drawing of the vulnerable function's stack layout, including arguments,
+   return address, stack cookie, saved registers, and local variables. Use
+   ASCII art, a picture of a hand drawing on a napkin, PostScript, or
+   similar.
+
+
+bottom of                                                            top of
+memory                                                               memory
+		
+	    buffer1 buffer2 loop counter    canary  randomjunk  ret  buffer_ptr
+<---    [    ]  [    ]  []              []      []          []   []
+esp+ 	0x0	    0x14    0x78            0x7c    0x80        0x8c 0x90
+        0       20      120             124     128         140  144
+
+top of                                                            bottom of
+stack                                                                 stack
+
+4) A description of how you worked around the stack protection.
+
+The canary was skipped by incrementing the loop counter enough to bypass the protection.

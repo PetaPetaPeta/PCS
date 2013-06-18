@@ -1,0 +1,6 @@
+
+I didn't have a chance to finish this assignment, due to limited time from the other course I'm currently taking.
+
+I did find a buffer overflow, comment some of the code and find some gadgets.
+
+The buffer overflow was found in the get_lines function, and the current version of exploit.c gives full control over EIP.

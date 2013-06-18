@@ -1,0 +1,110 @@
+Notes for final:
+
+
+Shellcode location is: 0x8050d65
+
+ROP-gadgets:
+	pop6-gadget at 0x804dbd5
+
+	Move the stackpointer by 0x90:
+	8049fbe
+
+Gadget strategy
+	Move the stackpointer by 0x90 8049fbe
+	Insert the ROP args to mmap
+
+
+
+There are the following filters which need to be tested
+dump:
+	Seems to dump all the data about the image
+invert 
+fliph 
+flipv 
+bw 
+font:
+	Takes two integer arguments and dumps some data. 
+	Not sure what data it is
+	Can be overflown using large integers. This gives segmentation fault
+
+
+text:
+	Not sure about this one. Doesn't seem to do anything.
+	The string has been overflown using the following:
+	struct _overflow {
+		char arg0[50000];
+		char arg1[8];
+		// char buf[10];      /* buffer that we overflow */
+		// uint32_t ret;       /* return address */
+		unsigned char nul;  /* terminate string */
+	} __attribute__((packed)) overflow;
+	char *argv[] = { 	"./c4288bb0f38c68dd2258b0b941ccbb4534e286d5",
+						"-read",
+						"demo.bmp", 
+						"-text",
+						"4","4","4","4","4",
+						(char*)&overflow,
+						NULL };
+	It does however only give a segmentation fault and no interesting return address
+
+
+1) Check the usage of strcpy in function find_extension:
+
+ 0x0804d279:    mov    eax,DWORD PTR [ebp-0xc]
+ 0x0804d27c:    add    eax,0x1
+ 0x0804d27f:    mov    DWORD PTR [esp+0x4],eax
+ 0x0804d283:    mov    eax,DWORD PTR [ebp+0x8]
+ 0x0804d286:    mov    DWORD PTR [esp],eax
+ 0x0804d289:    call   080489f0 <strcpy@plt>
+
+ Warning: There is no lenght check and consequently there is a potential BOF vulnerability.
+
+
+ 2) Check the usage of strcpy in function img_read:
+
+ 0x0804d314:    mov    eax,DWORD PTR [ebp-0x10]
+ 0x0804d317:    mov    DWORD PTR [esp+0x4],eax
+ 0x0804d31b:    mov    DWORD PTR [esp],globals          ;'globals'
+ 0x0804d322:    call   080489f0 <strcpy@plt>
+
+ Warning: There is no lenght check and consequently there is a potential BOF vulnerability.
+
+
+ 3) Check the usage of printf in function img_dump:
+
+ 0x0804d7a4:    mov    DWORD PTR [esp],eax
+ 0x0804d7a7:    call   08048980 <printf@plt>
+
+ Warning: First parameter of the printf call does not seem to be a constant format string. It could be a potential FS vulnerability.
+
+
+ 4) Check the usage of printf in function img_dump:
+
+ 0x0804d832:    mov    DWORD PTR [esp+0xc],ebx
+ 0x0804d836:    mov    DWORD PTR [esp+0x8],ecx
+ 0x0804d83a:    mov    DWORD PTR [esp+0x4],eax
+ 0x0804d83e:    mov    DWORD PTR [esp],const_0x804e437          ;'const_0x804e437: %02x:%02x:%02x '
+ 0x0804d845:    call   08048980 <printf@plt>
+
+ Warning: Format string contains less format specifiers than params have been passed to printf. There is a potential FS vulnerability.
+
+
+ 5) Check the usage of printf in function img_font:
+
+ 0x0804de57:    mov    DWORD PTR [esp+0x4],eax
+ 0x0804de5b:    mov    DWORD PTR [esp],const_0x804e4a8          ;'const_0x804e4a8: 0x%04x, '
+ 0x0804de62:    call   08048980 <printf@plt>
+
+ Warning: Format string contains less format specifiers than params have been passed to printf. There is a potential FS vulnerability.
+
+
+ 6) Check the usage of printf in function img_font:
+
+ 0x0804de77:    mov    eax,DWORD PTR [ebp-0x2c]
+ 0x0804de7a:    mov    DWORD PTR [esp+0x8],eax
+ 0x0804de7e:    mov    eax,DWORD PTR [ebp-0xc]
+ 0x0804de81:    mov    DWORD PTR [esp+0x4],eax
+ 0x0804de85:    mov    DWORD PTR [esp],const_0x804e4b1          ;'const_0x804e4b1: }, /* %02x, %d */\n'
+ 0x0804de8c:    call   08048980 <printf@plt>
+
+ Warning: Format string contains less format specifiers than params have been passed to printf. There is a potential FS vulnerability.

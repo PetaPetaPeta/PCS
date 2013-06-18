@@ -1,0 +1,4 @@
+
+--- Workflow ---
+
+The first thing I did was download BackTrack 5 RC3, to gain access to SPIKE and a lot of other sweet tools. The main goal was to get the SPIKE fuzzing framework.
