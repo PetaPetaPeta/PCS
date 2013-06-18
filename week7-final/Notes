@@ -1,5 +1,9 @@
-Notes for final:
-
++---------------------+
+| HEAP OVERFLOW NOTES |
++---------------------+
++-----------------------+
+| BUFFER OVERFLOW NOTES |
++-----------------------+
 
 Shellcode location is: 0x8050d65
 
@@ -14,17 +18,16 @@ Gadget strategy
 	Insert the ROP args to mmap
 
 
-
 There are the following filters which need to be tested
 dump:
 	Seems to dump all the data about the image
-invert 
+invert:
 fliph 
 flipv 
 bw 
 font:
 	Takes two integer arguments and dumps some data. 
-	Not sure what data it is
+	Prints out the color of certain pixels. The two arguments is the width and height of the image to be printed.
 	Can be overflown using large integers. This gives segmentation fault
 
 

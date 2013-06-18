@@ -6099,23 +6099,28 @@ Disassembly of section .text:
  804d250:	55                   	push   ebp
  804d251:	89 e5                	mov    ebp,esp
  804d253:	83 ec 28             	sub    esp,0x28
- ; Insert period on stack
+ ; Find the occurence of the first '.'
  804d256:	c7 44 24 04 2e 00 00 	mov    DWORD PTR [esp+0x4],0x2e
  804d25d:	00 
  804d25e:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
  804d261:	89 04 24             	mov    DWORD PTR [esp],eax
  804d264:	e8 77 b8 ff ff       	call   8048ae0 <strrchr@plt>
+ ; Compare index of first occurence with '.' and exit if that's the case
  804d269:	89 45 f4             	mov    DWORD PTR [ebp-0xc],eax
  804d26c:	83 7d f4 00          	cmp    DWORD PTR [ebp-0xc],0x0
  804d270:	75 07                	jne    804d279 <find_extension+0x29>
  804d272:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d277:	eb 1a                	jmp    804d293 <find_extension+0x43>
+ ; Move index of '.' to eax and move point on forward so it points to
+ ; the extension
  804d279:	8b 45 f4             	mov    eax,DWORD PTR [ebp-0xc]
  804d27c:	83 c0 01             	add    eax,0x1
+ ; Fix pointers and call strcpy
  804d27f:	89 44 24 04          	mov    DWORD PTR [esp+0x4],eax
  804d283:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804d286:	89 04 24             	mov    DWORD PTR [esp],eax
  804d289:	e8 62 b7 ff ff       	call   80489f0 <strcpy@plt>
+ ; Make sure no errors are returned
  804d28e:	b8 00 00 00 00       	mov    eax,0x0
  804d293:	c9                   	leave  
  804d294:	c3                   	ret    
@@ -6124,16 +6129,23 @@ Disassembly of section .text:
  804d295:	55                   	push   ebp
  804d296:	89 e5                	mov    ebp,esp
  804d298:	83 ec 48             	sub    esp,0x48
+ ; Move a pointer to the image data to eax
  804d29b:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
  804d29e:	8b 00                	mov    eax,DWORD PTR [eax]
+ ; Compare with 0x0 and print usage if equal. This is for empty filenames
  804d2a0:	89 45 f0             	mov    DWORD PTR [ebp-0x10],eax
  804d2a3:	83 7d f0 00          	cmp    DWORD PTR [ebp-0x10],0x0
  804d2a7:	74 0a                	je     804d2b3 <img_read+0x1e>
+ ; Move img data to eax and compare with '-'. This is because there can't
+ ; be '-' in the filename
+ ; If it is equal print usage. Else go to malloc
+ ; --- START USAGE PRINT AND ERROR ---
  804d2a9:	8b 45 f0             	mov    eax,DWORD PTR [ebp-0x10]
  804d2ac:	0f b6 00             	movzx  eax,BYTE PTR [eax]
  804d2af:	3c 2d                	cmp    al,0x2d
  804d2b1:	75 2f                	jne    804d2e2 <img_read+0x4d>
- 804d2b3:	a1 40 0b 05 08       	mov    eax,ds:0x8050b40
+ ; Print usage -read filename
+ 804d2b3:	a1 40 0b 05 08       	mov    eax,ds:0x8050b40 
  804d2b8:	89 44 24 0c          	mov    DWORD PTR [esp+0xc],eax
  804d2bc:	c7 44 24 08 16 00 00 	mov    DWORD PTR [esp+0x8],0x16
  804d2c3:	00 
@@ -6141,30 +6153,40 @@ Disassembly of section .text:
  804d2cb:	00 
  804d2cc:	c7 04 24 58 e3 04 08 	mov    DWORD PTR [esp],0x804e358
  804d2d3:	e8 08 b7 ff ff       	call   80489e0 <fwrite@plt>
+ ; Return with error
  804d2d8:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d2dd:	e9 16 02 00 00       	jmp    804d4f8 <img_read+0x263>
+ ; --- END USAGE PRINT AND ERROR ---
+ ; Allocate 0xc 
  804d2e2:	c7 04 24 0c 00 00 00 	mov    DWORD PTR [esp],0xc
  804d2e9:	e8 fd eb ff ff       	call   804beeb <malloc>
+ ; Move allocated pointer to edx
  804d2ee:	89 c2                	mov    edx,eax
+ ; Fix some pointers. Eax will end up pointing to globals
  804d2f0:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804d2f3:	89 10                	mov    DWORD PTR [eax],edx
  804d2f5:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804d2f8:	8b 00                	mov    eax,DWORD PTR [eax]
  804d2fa:	85 c0                	test   eax,eax
  804d2fc:	75 16                	jne    804d314 <img_read+0x7f>
+ ; Return with error
  804d2fe:	c7 04 24 48 e3 04 08 	mov    DWORD PTR [esp],0x804e348
  804d305:	e8 c6 b6 ff ff       	call   80489d0 <perror@plt>
  804d30a:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d30f:	e9 e4 01 00 00       	jmp    804d4f8 <img_read+0x263>
+ ; Copy the filename into globals. The vulnerability is here as globals
+ ; is marked as executable
  804d314:	8b 45 f0             	mov    eax,DWORD PTR [ebp-0x10]
  804d317:	89 44 24 04          	mov    DWORD PTR [esp+0x4],eax
  804d31b:	c7 04 24 60 0d 05 08 	mov    DWORD PTR [esp],0x8050d60
  804d322:	e8 c9 b6 ff ff       	call   80489f0 <strcpy@plt>
+ ; Call find_extension with globals. Returns 0 on success
  804d327:	c7 44 24 04 60 0d 05 	mov    DWORD PTR [esp+0x4],0x8050d60
  804d32e:	08 
  804d32f:	8d 45 d2             	lea    eax,[ebp-0x2e]
  804d332:	89 04 24             	mov    DWORD PTR [esp],eax
  804d335:	e8 16 ff ff ff       	call   804d250 <find_extension>
+ ; Return if there is an error
  804d33a:	85 c0                	test   eax,eax
  804d33c:	74 18                	je     804d356 <img_read+0xc1>
  804d33e:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
@@ -6174,9 +6196,11 @@ Disassembly of section .text:
  804d351:	e9 a2 01 00 00       	jmp    804d4f8 <img_read+0x263>
  804d356:	c7 44 24 04 90 e3 04 	mov    DWORD PTR [esp+0x4],0x804e390
  804d35d:	08 
+ ; Pointer to filename and compare case
  804d35e:	8d 45 d2             	lea    eax,[ebp-0x2e]
  804d361:	89 04 24             	mov    DWORD PTR [esp],eax
  804d364:	e8 27 b7 ff ff       	call   8048a90 <strcasecmp@plt>
+ ; Return if file does not exist
  804d369:	85 c0                	test   eax,eax
  804d36b:	74 18                	je     804d385 <img_read+0xf0>
  804d36d:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
@@ -6184,6 +6208,7 @@ Disassembly of section .text:
  804d379:	ff d0                	call   eax
  804d37b:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d380:	e9 73 01 00 00       	jmp    804d4f8 <img_read+0x263>
+ ; Open the file with the given file name
  804d385:	c7 44 24 04 00 00 00 	mov    DWORD PTR [esp+0x4],0x0
  804d38c:	00 
  804d38d:	c7 04 24 60 0d 05 08 	mov    DWORD PTR [esp],0x8050d60
@@ -6276,6 +6301,7 @@ Disassembly of section .text:
  804d4da:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
  804d4dd:	89 04 24             	mov    DWORD PTR [esp],eax
  804d4e0:	e8 b9 ee ff ff       	call   804c39e <free>
+ ; Call error function
  804d4e5:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
  804d4ea:	c7 04 24 e9 e3 04 08 	mov    DWORD PTR [esp],0x804e3e9
  804d4f1:	ff d0                	call   eax
@@ -7023,26 +7049,35 @@ Disassembly of section .text:
  804dd45:	89 e5                	mov    ebp,esp
  804dd47:	53                   	push   ebx
  804dd48:	83 ec 44             	sub    esp,0x44
+ ; Dereference width
  804dd4b:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
  804dd4e:	8b 00                	mov    eax,DWORD PTR [eax]
+ ; Read width and convert to integer
  804dd50:	89 04 24             	mov    DWORD PTR [esp],eax
  804dd53:	e8 a8 ad ff ff       	call   8048b00 <atoi@plt>
+ ; Move width to stack
  804dd58:	89 45 e4             	mov    DWORD PTR [ebp-0x1c],eax
+ ; Fix up some pointers
  804dd5b:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804dd5e:	8b 00                	mov    eax,DWORD PTR [eax]
  804dd60:	8b 40 04             	mov    eax,DWORD PTR [eax+0x4]
+ ; Move width to stack
  804dd63:	89 45 e0             	mov    DWORD PTR [ebp-0x20],eax
  804dd66:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
  804dd69:	8b 40 04             	mov    eax,DWORD PTR [eax+0x4]
+ ; Move height
  804dd6c:	89 45 dc             	mov    DWORD PTR [ebp-0x24],eax
  804dd6f:	8b 45 e4             	mov    eax,DWORD PTR [ebp-0x1c]
+ ; Move width to stack and call printf("#define FONT_W %d",width)
  804dd72:	89 44 24 04          	mov    DWORD PTR [esp+0x4],eax
  804dd76:	c7 04 24 58 e4 04 08 	mov    DWORD PTR [esp],0x804e458
  804dd7d:	e8 fe ab ff ff       	call   8048980 <printf@plt>
  804dd82:	8b 45 e0             	mov    eax,DWORD PTR [ebp-0x20]
+ ; Move height to stack and call printf("#define FONT_H %d",height)
  804dd85:	89 44 24 04          	mov    DWORD PTR [esp+0x4],eax
  804dd89:	c7 04 24 6b e4 04 08 	mov    DWORD PTR [esp],0x804e46b
  804dd90:	e8 eb ab ff ff       	call   8048980 <printf@plt>
+ ; const uint16_t font[256][FONT_W] = {
  804dd95:	c7 04 24 80 e4 04 08 	mov    DWORD PTR [esp],0x804e480
  804dd9c:	e8 5f ac ff ff       	call   8048a00 <puts@plt>
  804dda1:	c7 45 f4 00 00 00 00 	mov    DWORD PTR [ebp-0xc],0x0
