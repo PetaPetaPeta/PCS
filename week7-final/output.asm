@@ -6162,18 +6162,20 @@ Disassembly of section .text:
  804d2e9:	e8 fd eb ff ff       	call   804beeb <malloc>
  ; Move allocated pointer to edx
  804d2ee:	89 c2                	mov    edx,eax
- ; Fix some pointers. Eax will end up pointing to globals
+ ; Fix some pointers. Eax will end up pointing to globals if all is well
  804d2f0:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804d2f3:	89 10                	mov    DWORD PTR [eax],edx
  804d2f5:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804d2f8:	8b 00                	mov    eax,DWORD PTR [eax]
+ ; -- START ERROR RETURN --
  804d2fa:	85 c0                	test   eax,eax
  804d2fc:	75 16                	jne    804d314 <img_read+0x7f>
- ; Return with error
+ ; Point to file extension
  804d2fe:	c7 04 24 48 e3 04 08 	mov    DWORD PTR [esp],0x804e348
  804d305:	e8 c6 b6 ff ff       	call   80489d0 <perror@plt>
  804d30a:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d30f:	e9 e4 01 00 00       	jmp    804d4f8 <img_read+0x263>
+ ; -- END ERROR RETURN --
  ; Copy the filename into globals. The vulnerability is here as globals
  ; is marked as executable
  804d314:	8b 45 f0             	mov    eax,DWORD PTR [ebp-0x10]
@@ -6186,7 +6188,7 @@ Disassembly of section .text:
  804d32f:	8d 45 d2             	lea    eax,[ebp-0x2e]
  804d332:	89 04 24             	mov    DWORD PTR [esp],eax
  804d335:	e8 16 ff ff ff       	call   804d250 <find_extension>
- ; Return if there is an error
+ ; -- START ERROR RETURN -- 
  804d33a:	85 c0                	test   eax,eax
  804d33c:	74 18                	je     804d356 <img_read+0xc1>
  804d33e:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
@@ -6194,13 +6196,14 @@ Disassembly of section .text:
  804d34a:	ff d0                	call   eax
  804d34c:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d351:	e9 a2 01 00 00       	jmp    804d4f8 <img_read+0x263>
+ ; -- END ERROR RETURN --
+ ; Check if the extension is bmp and return if it isn't
  804d356:	c7 44 24 04 90 e3 04 	mov    DWORD PTR [esp+0x4],0x804e390
  804d35d:	08 
- ; Pointer to filename and compare case
  804d35e:	8d 45 d2             	lea    eax,[ebp-0x2e]
  804d361:	89 04 24             	mov    DWORD PTR [esp],eax
  804d364:	e8 27 b7 ff ff       	call   8048a90 <strcasecmp@plt>
- ; Return if file does not exist
+ ; -- START ERROR RETURN -- 
  804d369:	85 c0                	test   eax,eax
  804d36b:	74 18                	je     804d385 <img_read+0xf0>
  804d36d:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
@@ -6208,7 +6211,7 @@ Disassembly of section .text:
  804d379:	ff d0                	call   eax
  804d37b:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d380:	e9 73 01 00 00       	jmp    804d4f8 <img_read+0x263>
- ; Open the file with the given file name
+ ; -- END ERROR RETURN --
  804d385:	c7 44 24 04 00 00 00 	mov    DWORD PTR [esp+0x4],0x0
  804d38c:	00 
  804d38d:	c7 04 24 60 0d 05 08 	mov    DWORD PTR [esp],0x8050d60
