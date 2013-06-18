@@ -363,8 +363,8 @@ Disassembly of section .text:
  8048d2a:	b8 01 00 00 00       	mov    eax,0x1
  8048d2f:	eb 4b                	jmp    8048d7c <main+0x11c>
  8048d31:	83 44 24 18 01       	add    DWORD PTR [esp+0x18],0x1
- 8048d36:	8b 44 24 18          	mov    eax,DWORD PTR [esp+0x18]
  ; Give the parameter read
+ 8048d36:	8b 44 24 18          	mov    eax,DWORD PTR [esp+0x18]
  8048d3a:	8b 04 c5 c0 e1 04 08 	mov    eax,DWORD PTR [eax*8+0x804e1c0]
  8048d41:	85 c0                	test   eax,eax
  8048d43:	75 86                	jne    8048ccb <main+0x6b>
