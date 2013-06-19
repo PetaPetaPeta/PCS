@@ -33,6 +33,8 @@ To find possible places search for \tcall *[a-zA-Z]
 1) How the heap overflow works and a commented disassembly.
 
 
+3) The exploit
+
 
 
 +-----------------------------------+
@@ -126,98 +128,7 @@ To find possible places search for \tcall *[a-zA-Z]
  804d380:	e9 73 01 00 00       	jmp    804d4f8 <img_read+0x263>
  ; -- END ERROR RETURN --
  804d385:	c7 44 24 04 00 00 00 	mov    DWORD PTR [esp+0x4],0x0
- 804d38c:	00 
- 804d38d:	c7 04 24 60 0d 05 08 	mov    DWORD PTR [esp],0x8050d60
- 804d394:	e8 87 b6 ff ff       	call   8048a20 <open@plt>
- 804d399:	89 45 ec             	mov    DWORD PTR [ebp-0x14],eax
- 804d39c:	83 7d ec 00          	cmp    DWORD PTR [ebp-0x14],0x0
- 804d3a0:	79 16                	jns    804d3b8 <img_read+0x123>
- 804d3a2:	c7 04 24 ad e3 04 08 	mov    DWORD PTR [esp],0x804e3ad
- 804d3a9:	e8 22 b6 ff ff       	call   80489d0 <perror@plt>
- 804d3ae:	b8 ff ff ff ff       	mov    eax,0xffffffff
- 804d3b3:	e9 40 01 00 00       	jmp    804d4f8 <img_read+0x263>
- 804d3b8:	c7 44 24 08 0e 00 00 	mov    DWORD PTR [esp+0x8],0xe
- 804d3bf:	00 
- 804d3c0:	8d 45 d6             	lea    eax,[ebp-0x2a]
- 804d3c3:	89 44 24 04          	mov    DWORD PTR [esp+0x4],eax
- 804d3c7:	8b 45 ec             	mov    eax,DWORD PTR [ebp-0x14]
- 804d3ca:	89 04 24             	mov    DWORD PTR [esp],eax
- 804d3cd:	e8 9e b5 ff ff       	call   8048970 <read@plt>
- 804d3d2:	85 c0                	test   eax,eax
- 804d3d4:	79 16                	jns    804d3ec <img_read+0x157>
- 804d3d6:	c7 04 24 bb e3 04 08 	mov    DWORD PTR [esp],0x804e3bb
- 804d3dd:	e8 ee b5 ff ff       	call   80489d0 <perror@plt>
- 804d3e2:	b8 ff ff ff ff       	mov    eax,0xffffffff
- 804d3e7:	e9 0c 01 00 00       	jmp    804d4f8 <img_read+0x263>
- 804d3ec:	0f b6 45 d6          	movzx  eax,BYTE PTR [ebp-0x2a]
- 804d3f0:	3c 42                	cmp    al,0x42
- 804d3f2:	75 08                	jne    804d3fc <img_read+0x167>
- 804d3f4:	0f b6 45 d7          	movzx  eax,BYTE PTR [ebp-0x29]
- 804d3f8:	3c 4d                	cmp    al,0x4d
- 804d3fa:	74 18                	je     804d414 <img_read+0x17f>
- 804d3fc:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
- 804d401:	c7 04 24 c9 e3 04 08 	mov    DWORD PTR [esp],0x804e3c9
- 804d408:	ff d0                	call   eax
- 804d40a:	b8 ff ff ff ff       	mov    eax,0xffffffff
- 804d40f:	e9 e4 00 00 00       	jmp    804d4f8 <img_read+0x263>
- 804d414:	8b 45 d8             	mov    eax,DWORD PTR [ebp-0x28]
- 804d417:	89 04 24             	mov    DWORD PTR [esp],eax
- 804d41a:	e8 cc ea ff ff       	call   804beeb <malloc>
- 804d41f:	89 45 e8             	mov    DWORD PTR [ebp-0x18],eax
- 804d422:	83 7d e8 00          	cmp    DWORD PTR [ebp-0x18],0x0
- 804d426:	75 16                	jne    804d43e <img_read+0x1a9>
- 804d428:	c7 04 24 48 e3 04 08 	mov    DWORD PTR [esp],0x804e348
- 804d42f:	e8 9c b5 ff ff       	call   80489d0 <perror@plt>
- 804d434:	b8 ff ff ff ff       	mov    eax,0xffffffff
- 804d439:	e9 ba 00 00 00       	jmp    804d4f8 <img_read+0x263>
- 804d43e:	c7 04 24 04 00 00 00 	mov    DWORD PTR [esp],0x4
- 804d445:	e8 a1 ea ff ff       	call   804beeb <malloc>
- 804d44a:	c7 44 24 08 00 00 00 	mov    DWORD PTR [esp+0x8],0x0
- 804d451:	00 
- 804d452:	c7 44 24 04 00 00 00 	mov    DWORD PTR [esp+0x4],0x0
- 804d459:	00 
- 804d45a:	8b 45 ec             	mov    eax,DWORD PTR [ebp-0x14]
- 804d45d:	89 04 24             	mov    DWORD PTR [esp],eax
- 804d460:	e8 4b b5 ff ff       	call   80489b0 <lseek@plt>
- 804d465:	83 f8 ff             	cmp    eax,0xffffffff
- 804d468:	75 13                	jne    804d47d <img_read+0x1e8>
- 804d46a:	c7 04 24 da e3 04 08 	mov    DWORD PTR [esp],0x804e3da
- 804d471:	e8 5a b5 ff ff       	call   80489d0 <perror@plt>
- 804d476:	b8 ff ff ff ff       	mov    eax,0xffffffff
- 804d47b:	eb 7b                	jmp    804d4f8 <img_read+0x263>
- 804d47d:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
- 804d480:	89 45 f4             	mov    DWORD PTR [ebp-0xc],eax
- 804d483:	eb 06                	jmp    804d48b <img_read+0x1f6>
- 804d485:	8b 45 e4             	mov    eax,DWORD PTR [ebp-0x1c]
- 804d488:	01 45 f4             	add    DWORD PTR [ebp-0xc],eax
- 804d48b:	c7 44 24 08 00 10 00 	mov    DWORD PTR [esp+0x8],0x1000
- 804d492:	00 
- 804d493:	8b 45 f4             	mov    eax,DWORD PTR [ebp-0xc]
- 804d496:	89 44 24 04          	mov    DWORD PTR [esp+0x4],eax
- 804d49a:	8b 45 ec             	mov    eax,DWORD PTR [ebp-0x14]
- 804d49d:	89 04 24             	mov    DWORD PTR [esp],eax
- 804d4a0:	e8 cb b4 ff ff       	call   8048970 <read@plt>
- 804d4a5:	89 45 e4             	mov    DWORD PTR [ebp-0x1c],eax
- 804d4a8:	83 7d e4 00          	cmp    DWORD PTR [ebp-0x1c],0x0
- 804d4ac:	7f d7                	jg     804d485 <img_read+0x1f0>
- 804d4ae:	8b 45 ec             	mov    eax,DWORD PTR [ebp-0x14]
- 804d4b1:	89 04 24             	mov    DWORD PTR [esp],eax
- 804d4b4:	e8 87 b6 ff ff       	call   8048b40 <close@plt>
- 804d4b9:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
- 804d4bc:	83 c0 0e             	add    eax,0xe
- 804d4bf:	8b 00                	mov    eax,DWORD PTR [eax]
- 804d4c1:	83 f8 28             	cmp    eax,0x28
- 804d4c4:	75 14                	jne    804d4da <img_read+0x245>
- 804d4c6:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
- 804d4c9:	89 44 24 04          	mov    DWORD PTR [esp+0x4],eax
- 804d4cd:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
- 804d4d0:	89 04 24             	mov    DWORD PTR [esp],eax
- 804d4d3:	e8 24 fb ff ff       	call   804cffc <parse_v3>
- 804d4d8:	eb 1e                	jmp    804d4f8 <img_read+0x263>
- 804d4da:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
- 804d4dd:	89 04 24             	mov    DWORD PTR [esp],eax
- 804d4e0:	e8 b9 ee ff ff       	call   804c39e <free>
- ; Call error function
+ ...
  804d4e5:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
  804d4ea:	c7 04 24 e9 e3 04 08 	mov    DWORD PTR [esp],0x804e3e9
  804d4f1:	ff d0                	call   eax
@@ -226,3 +137,109 @@ To find possible places search for \tcall *[a-zA-Z]
  804d4f9:	c3                   	ret    
  804d4fa:	90                   	nop
  804d4fb:	90                   	nop
+
+0804cffc <parse_v3>:
+ 804cffc:	55                   	push   ebp
+ 804cffd:	89 e5                	mov    ebp,esp
+ 804cfff:	53                   	push   ebx
+ 804d000:	83 ec 34             	sub    esp,0x34
+ ; Move a pointer to the bmp data into ebp-0x14
+ 804d003:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
+ 804d006:	89 45 ec             	mov    DWORD PTR [ebp-0x14],eax
+ 804d009:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
+ ; Move to start of info header  and insert it in ebp-0x18
+ 804d00c:	83 c0 0e             	add    eax,0xe
+ 804d00f:	89 45 e8             	mov    DWORD PTR [ebp-0x18],eax
+ 804d012:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
+ ; Check the number of planes
+ 804d015:	0f b7 40 0c          	movzx  eax,WORD PTR [eax+0xc]
+ 804d019:	66 83 f8 01          	cmp    ax,0x1
+ 804d01d:	74 18                	je     804d037 <parse_v3+0x3b>
+ ; -- START ERROR --
+ 804d01f:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
+ 804d024:	c7 04 24 a8 e2 04 08 	mov    DWORD PTR [esp],0x804e2a8
+ 804d02b:	ff d0                	call   eax
+ 804d02d:	b8 ff ff ff ff       	mov    eax,0xffffffff
+ 804d032:	e9 13 02 00 00       	jmp    804d24a <parse_v3+0x24e>
+ ; -- END ERROR --
+ ; Eax points points to start of info header. 
+ 804d037:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
+ ; Check bits pr pixel
+ 804d03a:	0f b7 40 0e          	movzx  eax,WORD PTR [eax+0xe]
+ 804d03e:	66 83 f8 18          	cmp    ax,0x18
+ 804d042:	74 18                	je     804d05c <parse_v3+0x60>
+ ; -- START ERROR --
+ 804d044:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
+ 804d049:	c7 04 24 c8 e2 04 08 	mov    DWORD PTR [esp],0x804e2c8
+ 804d050:	ff d0                	call   eax
+ 804d052:	b8 ff ff ff ff       	mov    eax,0xffffffff
+ 804d057:	e9 ee 01 00 00       	jmp    804d24a <parse_v3+0x24e>
+ ; -- END ERROR --
+ ; Eax points points to start of info header. 
+ 804d05c:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
+ ; Check the compression type
+ 804d05f:	8b 40 10             	mov    eax,DWORD PTR [eax+0x10]
+ 804d062:	85 c0                	test   eax,eax
+ 804d064:	74 18                	je     804d07e <parse_v3+0x82>
+ ; -- START ERROR --
+ 804d066:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
+ 804d06b:	c7 04 24 f0 e2 04 08 	mov    DWORD PTR [esp],0x804e2f0
+ 804d072:	ff d0                	call   eax
+ 804d074:	b8 ff ff ff ff       	mov    eax,0xffffffff
+ 804d079:	e9 cc 01 00 00       	jmp    804d24a <parse_v3+0x24e>
+ ; -- END ERROR --
+ ; Eax points points to start of info header. 
+ 804d07e:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
+ ; Check for image type
+ 804d081:	8b 40 20             	mov    eax,DWORD PTR [eax+0x20]
+ 804d084:	85 c0                	test   eax,eax
+ 804d086:	74 18                	je     804d0a0 <parse_v3+0xa4>
+ ; -- START ERROR --
+ 804d088:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
+ 804d08d:	c7 04 24 10 e3 04 08 	mov    DWORD PTR [esp],0x804e310
+ 804d094:	ff d0                	call   eax
+ 804d096:	b8 ff ff ff ff       	mov    eax,0xffffffff
+ 804d09b:	e9 aa 01 00 00       	jmp    804d24a <parse_v3+0x24e>
+ ; -- END ERROR --
+ ; Point to block before image data? The vulnerability is here!
+ 804d0a0:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+ 804d0a3:	8b 00                	mov    eax,DWORD PTR [eax]
+ ; Put width of image in edx and copy it in before the image data(eax)
+ 804d0a5:	8b 55 e8             	mov    edx,DWORD PTR [ebp-0x18]
+ 804d0a8:	8b 52 04             	mov    edx,DWORD PTR [edx+0x4]
+ 804d0ab:	89 10                	mov    DWORD PTR [eax],edx
+ ; Do the same for the height
+ 804d0ad:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+ 804d0b0:	8b 00                	mov    eax,DWORD PTR [eax]
+ 804d0b2:	8b 55 e8             	mov    edx,DWORD PTR [ebp-0x18]
+ 804d0b5:	8b 52 08             	mov    edx,DWORD PTR [edx+0x8]
+ 804d0b8:	89 50 04             	mov    DWORD PTR [eax+0x4],edx
+ ; Point to image header and deref
+ 804d0bb:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+ 804d0be:	8b 00                	mov    eax,DWORD PTR [eax]
+ ; Put width into edx
+ 804d0c0:	8b 10                	mov    edx,DWORD PTR [eax]
+ 804d0c2:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+ ; And height into eax
+ 804d0c5:	8b 00                	mov    eax,DWORD PTR [eax]
+ 804d0c7:	8b 40 04             	mov    eax,DWORD PTR [eax+0x4]
+ ; Check for the size of the image
+ 804d0ca:	0f af c2             	imul   eax,edx
+ 804d0cd:	3d 00 00 10 00       	cmp    eax,0x100000
+ 804d0d2:	76 18                	jbe    804d0ec <parse_v3+0xf0>
+ ; -- START ERROR --
+ 804d0d4:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
+ 804d0d9:	c7 04 24 36 e3 04 08 	mov    DWORD PTR [esp],0x804e336
+ ; We are gonna exit to a specific function here in the exploit
+ 804d0e0:	ff d0                	call   eax
+ 804d0e2:	b8 ff ff ff ff       	mov    eax,0xffffffff
+ 804d0e7:	e9 5e 01 00 00       	jmp    804d24a <parse_v3+0x24e>
+ ; -- END ERROR --
+ ; Allocate enough space for the image here
+ 804d0ec:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+ ...
+ 804d245:	b8 00 00 00 00       	mov    eax,0x0
+ 804d24a:	83 c4 34             	add    esp,0x34
+ 804d24d:	5b                   	pop    ebx
+ 804d24e:	5d                   	pop    ebp
+ 804d24f:	c3                   	ret    
