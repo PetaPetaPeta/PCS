@@ -5918,14 +5918,15 @@ Disassembly of section .text:
  804cffd:	89 e5                	mov    ebp,esp
  804cfff:	53                   	push   ebx
  804d000:	83 ec 34             	sub    esp,0x34
- ; Move a pointer to the bmp file data into ebp-0x14
+ ; Move a pointer to the bmp data into ebp-0x14
  804d003:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
  804d006:	89 45 ec             	mov    DWORD PTR [ebp-0x14],eax
  804d009:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
- ; Move to header size and insert it in ebp-0x18
+ ; Move to start of info header  and insert it in ebp-0x18
  804d00c:	83 c0 0e             	add    eax,0xe
  804d00f:	89 45 e8             	mov    DWORD PTR [ebp-0x18],eax
  804d012:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
+ ; Check the number of planes
  804d015:	0f b7 40 0c          	movzx  eax,WORD PTR [eax+0xc]
  804d019:	66 83 f8 01          	cmp    ax,0x1
  804d01d:	74 18                	je     804d037 <parse_v3+0x3b>
@@ -5936,7 +5937,9 @@ Disassembly of section .text:
  804d02d:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d032:	e9 13 02 00 00       	jmp    804d24a <parse_v3+0x24e>
  ; -- END ERROR --
+ ; Eax points points to start of info header. 
  804d037:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
+ ; Check bits pr pixel
  804d03a:	0f b7 40 0e          	movzx  eax,WORD PTR [eax+0xe]
  804d03e:	66 83 f8 18          	cmp    ax,0x18
  804d042:	74 18                	je     804d05c <parse_v3+0x60>
@@ -5947,7 +5950,9 @@ Disassembly of section .text:
  804d052:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d057:	e9 ee 01 00 00       	jmp    804d24a <parse_v3+0x24e>
  ; -- END ERROR --
+ ; Eax points points to start of info header. 
  804d05c:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
+ ; Check the compression type
  804d05f:	8b 40 10             	mov    eax,DWORD PTR [eax+0x10]
  804d062:	85 c0                	test   eax,eax
  804d064:	74 18                	je     804d07e <parse_v3+0x82>
@@ -5958,40 +5963,53 @@ Disassembly of section .text:
  804d074:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d079:	e9 cc 01 00 00       	jmp    804d24a <parse_v3+0x24e>
  ; -- END ERROR --
+ ; Eax points points to start of info header. 
  804d07e:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
+ ; Check for image type
  804d081:	8b 40 20             	mov    eax,DWORD PTR [eax+0x20]
  804d084:	85 c0                	test   eax,eax
  804d086:	74 18                	je     804d0a0 <parse_v3+0xa4>
+ ; -- START ERROR --
  804d088:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
  804d08d:	c7 04 24 10 e3 04 08 	mov    DWORD PTR [esp],0x804e310
  804d094:	ff d0                	call   eax
  804d096:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d09b:	e9 aa 01 00 00       	jmp    804d24a <parse_v3+0x24e>
+ ; -- END ERROR --
+ ; Point to block before image data? The vulnerability is here!
  804d0a0:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804d0a3:	8b 00                	mov    eax,DWORD PTR [eax]
+ ; Put width of image in edx and copy it in before the image data(eax)
  804d0a5:	8b 55 e8             	mov    edx,DWORD PTR [ebp-0x18]
  804d0a8:	8b 52 04             	mov    edx,DWORD PTR [edx+0x4]
  804d0ab:	89 10                	mov    DWORD PTR [eax],edx
+ ; Do the same for the height
  804d0ad:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804d0b0:	8b 00                	mov    eax,DWORD PTR [eax]
  804d0b2:	8b 55 e8             	mov    edx,DWORD PTR [ebp-0x18]
  804d0b5:	8b 52 08             	mov    edx,DWORD PTR [edx+0x8]
  804d0b8:	89 50 04             	mov    DWORD PTR [eax+0x4],edx
+ ; Point to image header and deref
  804d0bb:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804d0be:	8b 00                	mov    eax,DWORD PTR [eax]
+ ; Put width into edx
  804d0c0:	8b 10                	mov    edx,DWORD PTR [eax]
  804d0c2:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+ ; And height into eax
  804d0c5:	8b 00                	mov    eax,DWORD PTR [eax]
  804d0c7:	8b 40 04             	mov    eax,DWORD PTR [eax+0x4]
+ ; Check for the size of the image
  804d0ca:	0f af c2             	imul   eax,edx
  804d0cd:	3d 00 00 10 00       	cmp    eax,0x100000
  804d0d2:	76 18                	jbe    804d0ec <parse_v3+0xf0>
- ; Make a call to err_func. 
+ ; -- START ERROR --
  804d0d4:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
  804d0d9:	c7 04 24 36 e3 04 08 	mov    DWORD PTR [esp],0x804e336
  804d0e0:	ff d0                	call   eax
  804d0e2:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d0e7:	e9 5e 01 00 00       	jmp    804d24a <parse_v3+0x24e>
+ ; -- END ERROR --
+ ; Allocate enough space for the image here
  804d0ec:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804d0ef:	8b 18                	mov    ebx,DWORD PTR [eax]
  804d0f1:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
