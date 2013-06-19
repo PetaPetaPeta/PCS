@@ -28,24 +28,6 @@ bmp_file			= "\x00" * bmp_file_size
 bmp_header			= "\x00" * bmp_header_size
 bmp_raw_size		= bmp_file_size - bmp_header_size
 
-puts "file size "
-puts "  (int) = " + bmp_file_size.to_s
-
-puts "row size"
-puts "  (int) = " + bmp_row_size.to_s
-
-puts "header size "
-puts "  (int) = " + bmp_header_size.to_s
-
-puts "raw offset"
-puts "  (int) = " + bmp_raw_offset.to_s
-
-puts "width"
-puts "  (int) = " + bmp_width.to_s
-
-puts "height"
-puts "  (int) = " + bmp_height.to_s
-
 # generate bitmap file header
 bmp_header[0,2]		= "\x42\x4D"					# "BM"
 bmp_header[2,4]		= [bmp_file_size].pack('V')		# size of bitmap file

@@ -309,8 +309,11 @@ Disassembly of section .text:
  8048c61:	89 e5                	mov    ebp,esp
  8048c63:	83 e4 f0             	and    esp,0xfffffff0
  8048c66:	83 ec 20             	sub    esp,0x20
+ ; Check for the number of arguments for the function
  8048c69:	83 7d 08 01          	cmp    DWORD PTR [ebp+0x8],0x1
  8048c6d:	7f 28                	jg     8048c97 <main+0x37>
+ ; --- START ERROR ---
+ ; Move current /path/to/program to edx and call error
  8048c6f:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
  8048c72:	8b 10                	mov    edx,DWORD PTR [eax]
  8048c74:	a1 40 0b 05 08       	mov    eax,ds:0x8050b40
@@ -319,22 +322,31 @@ Disassembly of section .text:
  8048c84:	08 
  8048c85:	89 04 24             	mov    DWORD PTR [esp],eax
  8048c88:	e8 e3 fd ff ff       	call   8048a70 <fprintf@plt>
+ ; jump to end of function
  8048c8d:	b8 01 00 00 00       	mov    eax,0x1
  8048c92:	e9 e5 00 00 00       	jmp    8048d7c <main+0x11c>
+ ; --- END ERROR ---
+ ; --- START LOOP ---
+ ; This loop is responsible for reading the parameters
+ ; Loop counter in [ebp+0x8]: # of arguments
+ ; Incrementer in [ebp+0xc]: Current argument
  8048c97:	c7 44 24 1c 01 00 00 	mov    DWORD PTR [esp+0x1c],0x1
  8048c9e:	00 
  8048c9f:	e9 a9 00 00 00       	jmp    8048d4d <main+0xed>
+ ; Get the current argument and put it in eax
  8048ca4:	8b 44 24 1c          	mov    eax,DWORD PTR [esp+0x1c]
  8048ca8:	8d 14 85 00 00 00 00 	lea    edx,[eax*4+0x0]
  8048caf:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
  8048cb2:	01 d0                	add    eax,edx
  8048cb4:	8b 00                	mov    eax,DWORD PTR [eax]
  8048cb6:	0f b6 00             	movzx  eax,BYTE PTR [eax]
+ ; Check if it's a parameter
  8048cb9:	3c 2d                	cmp    al,0x2d
  8048cbb:	0f 85 86 00 00 00    	jne    8048d47 <main+0xe7>
  8048cc1:	c7 44 24 18 00 00 00 	mov    DWORD PTR [esp+0x18],0x0
  8048cc8:	00 
  8048cc9:	eb 6b                	jmp    8048d36 <main+0xd6>
+ ; 
  8048ccb:	8b 44 24 18          	mov    eax,DWORD PTR [esp+0x18]
  8048ccf:	8b 04 c5 c0 e1 04 08 	mov    eax,DWORD PTR [eax*8+0x804e1c0]
  8048cd6:	8b 54 24 1c          	mov    edx,DWORD PTR [esp+0x1c]
@@ -363,7 +375,7 @@ Disassembly of section .text:
  8048d2a:	b8 01 00 00 00       	mov    eax,0x1
  8048d2f:	eb 4b                	jmp    8048d7c <main+0x11c>
  8048d31:	83 44 24 18 01       	add    DWORD PTR [esp+0x18],0x1
- ; Give the parameter read
+ ; Check if the parameter is valid
  8048d36:	8b 44 24 18          	mov    eax,DWORD PTR [esp+0x18]
  8048d3a:	8b 04 c5 c0 e1 04 08 	mov    eax,DWORD PTR [eax*8+0x804e1c0]
  8048d41:	85 c0                	test   eax,eax
@@ -371,9 +383,11 @@ Disassembly of section .text:
  8048d45:	eb 01                	jmp    8048d48 <main+0xe8>
  8048d47:	90                   	nop
  8048d48:	83 44 24 1c 01       	add    DWORD PTR [esp+0x1c],0x1
+ ; Compare loop counter and incrementor
  8048d4d:	8b 44 24 1c          	mov    eax,DWORD PTR [esp+0x1c]
  8048d51:	3b 45 08             	cmp    eax,DWORD PTR [ebp+0x8]
  8048d54:	0f 8c 4a ff ff ff    	jl     8048ca4 <main+0x44>
+ ; --- END LOOP ---
  8048d5a:	a1 28 0e 05 08       	mov    eax,ds:0x8050e28
  8048d5f:	8b 40 08             	mov    eax,DWORD PTR [eax+0x8]
  8048d62:	89 04 24             	mov    DWORD PTR [esp],eax
@@ -5904,38 +5918,46 @@ Disassembly of section .text:
  804cffd:	89 e5                	mov    ebp,esp
  804cfff:	53                   	push   ebx
  804d000:	83 ec 34             	sub    esp,0x34
+ ; Move a pointer to the bmp file data into ebp-0x14
  804d003:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
  804d006:	89 45 ec             	mov    DWORD PTR [ebp-0x14],eax
  804d009:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
+ ; Move to header size and insert it in ebp-0x18
  804d00c:	83 c0 0e             	add    eax,0xe
  804d00f:	89 45 e8             	mov    DWORD PTR [ebp-0x18],eax
  804d012:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
  804d015:	0f b7 40 0c          	movzx  eax,WORD PTR [eax+0xc]
  804d019:	66 83 f8 01          	cmp    ax,0x1
  804d01d:	74 18                	je     804d037 <parse_v3+0x3b>
+ ; -- START ERROR --
  804d01f:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
  804d024:	c7 04 24 a8 e2 04 08 	mov    DWORD PTR [esp],0x804e2a8
  804d02b:	ff d0                	call   eax
  804d02d:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d032:	e9 13 02 00 00       	jmp    804d24a <parse_v3+0x24e>
+ ; -- END ERROR --
  804d037:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
  804d03a:	0f b7 40 0e          	movzx  eax,WORD PTR [eax+0xe]
  804d03e:	66 83 f8 18          	cmp    ax,0x18
  804d042:	74 18                	je     804d05c <parse_v3+0x60>
+ ; -- START ERROR --
  804d044:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
  804d049:	c7 04 24 c8 e2 04 08 	mov    DWORD PTR [esp],0x804e2c8
  804d050:	ff d0                	call   eax
  804d052:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d057:	e9 ee 01 00 00       	jmp    804d24a <parse_v3+0x24e>
+ ; -- END ERROR --
  804d05c:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
  804d05f:	8b 40 10             	mov    eax,DWORD PTR [eax+0x10]
  804d062:	85 c0                	test   eax,eax
  804d064:	74 18                	je     804d07e <parse_v3+0x82>
+ ; -- START ERROR --
  804d066:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
  804d06b:	c7 04 24 f0 e2 04 08 	mov    DWORD PTR [esp],0x804e2f0
  804d072:	ff d0                	call   eax
  804d074:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d079:	e9 cc 01 00 00       	jmp    804d24a <parse_v3+0x24e>
+ ; -- END ERROR --
  804d07e:	8b 45 e8             	mov    eax,DWORD PTR [ebp-0x18]
  804d081:	8b 40 20             	mov    eax,DWORD PTR [eax+0x20]
  804d084:	85 c0                	test   eax,eax
