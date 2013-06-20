@@ -8,32 +8,77 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 | Part 1: Stack overflow |
 +------------------------+
 1) How the stack overflow works and a commented disassembly.
-The stack overflow I've found takes advantage of a missing length check on
-the length of the file name including the extension. The overflow is located 
-in the function img_read where a strcpy is made.  The filename is copied
-into .globals, which luckily is marked as being executable.
 A commented version of the function img_read is included in Appendix A. The
 only parts of the function which are commented are executed during the 
 exploit.
-
+The stack overflow I've found takes advantage of a missing length check on
+the length of the file name including the extension. The overflow is located 
+in the function img_read 0x804d314 where a strcpy is made.  The filename 
+is copied into .globals, which luckily is marked as being executable. As the
+file extension is not valid it returns a short while after. As the stack is
+overflown, the return address is controlled and returns to the shellcode.
 
 2) A drawing depicting the layout of the stack frame at the moment of
    exploitation.
+
+This is a drawing of the stack before the call to strcpy is made.
+bottom of                                                            top of
+memory                                                               memory
+esp+    0x0                  0x4 			    0x4c 	    0x48
+   pointer to .globals  pointer to filename  ret address  ebp points here
+
++ 0x0                   0x36
+  start of filename  ret address 
 
 
 3) The exploit
 
 The exploit can be seen in the file stack-exploit.c.
 
-+-----------------------+
-| Part 2: Heap overflow |
-+-----------------------+
-To find possible places search for \tcall *[a-zA-Z]
++---------------------+
+| Part 2: WWW exploit |
++---------------------+
+1) How the www exploit works and a commented disassembly.
+The commented disassembly of parts of the vulnerable function can be seen
+in Appendix B.
+The idea behind this exploit is that it modifies a function pointer, such
+that it redirects to some shellcode located in a buffer. When this function
+is called the shellcode is then executed.
+As in the previous part the shellcode is a part of the filename and thus
+located in the .globals segment. There is however a minor important deviation
+from the previous part in that this exploit actually creates the file. This
+means that forward-slashes can't be a part of the filename. This poses a 
+challenge as we need to execute '/bin/sh'. It is overcome by changing this
+shellcode:
+	push word 0x732f
+	push dword 0x6e69622f
+to this:
+	push word 0x732e
+	add word [esp], 0x1
+	push dword 0x6e69622e
+	add word [esp], 0x1
+Now that the shellcode is located in an executable segment with a static 
+address, it just needs to be executed somehow. This is done by taking 
+advantage of a vulnerability in the parse_v3 function. The vulnerability is
+located around 0x804d0a0. As the filename flows into the area where the
+file is stored, an abitrary address can be inserted in byte 200-203 of the
+file. This address is written to in 0x804d0ab. The data it writes is
+the width of the image and this can be controlled by altering the file upon
+creating it. It is thus possible to write an abitrary value to an abitrary
+address.
+This is used to overwrite 0x8050b38. This address is called in 0x804d0e0 and
+this gives code execution.
 
-1) How the heap overflow works and a commented disassembly.
+2) A drawing depicting the layout of the stack frame at the moment of
+   exploitation.
 
+[ebp+0x8]  -> Pointer to globals where bmp is
+[esp+0x34] -> ebp
+[ebp-0x14] -> Pointer to start of .bmp
+[ebp-0x18] -> Pointer to start of info header
 
 3) The exploit
+The exploit can be seen in the file www-exploit.c.
 
 
 
