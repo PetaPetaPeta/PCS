@@ -6208,9 +6208,9 @@ Disassembly of section .text:
  804d2f5:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804d2f8:	8b 00                	mov    eax,DWORD PTR [eax]
  ; -- START ERROR RETURN --
+ ; Malloc failed if this is entered
  804d2fa:	85 c0                	test   eax,eax
  804d2fc:	75 16                	jne    804d314 <img_read+0x7f>
- ; Point to file extension
  804d2fe:	c7 04 24 48 e3 04 08 	mov    DWORD PTR [esp],0x804e348
  804d305:	e8 c6 b6 ff ff       	call   80489d0 <perror@plt>
  804d30a:	b8 ff ff ff ff       	mov    eax,0xffffffff
@@ -6237,7 +6237,8 @@ Disassembly of section .text:
  804d34c:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d351:	e9 a2 01 00 00       	jmp    804d4f8 <img_read+0x263>
  ; -- END ERROR RETURN --
- ; Check if the extension is bmp and return if it isn't
+ ; Check if the extension is bmp and return if it isn't. Since the file
+ ; extension isn't bmp in the exploit this exit is used
  804d356:	c7 44 24 04 90 e3 04 	mov    DWORD PTR [esp+0x4],0x804e390
  804d35d:	08 
  804d35e:	8d 45 d2             	lea    eax,[ebp-0x2e]

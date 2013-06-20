@@ -20,16 +20,11 @@ overflown, the return address is controlled and returns to the shellcode.
 
 2) A drawing depicting the layout of the stack frame at the moment of
    exploitation.
-
-This is a drawing of the stack before the call to strcpy is made.
-bottom of                                                            top of
-memory                                                               memory
-esp+    0x0                  0x4 			    0x4c 	    0x48
-   pointer to .globals  pointer to filename  ret address  ebp points here
-
-+ 0x0                   0x36
-  start of filename  ret address 
-
+bottom of                                                        top of
+memory                                                           memory
+esp+    0x0          0x4 	  0x18       0x48 			0x4c
+    pointer to    pointer to  start of  ebp points   return address
+   	 .globals      filename   filename    here
 
 3) The exploit
 
@@ -72,10 +67,12 @@ this gives code execution.
 2) A drawing depicting the layout of the stack frame at the moment of
    exploitation.
 
-[ebp+0x8]  -> Pointer to globals where bmp is
-[esp+0x34] -> ebp
-[ebp-0x14] -> Pointer to start of .bmp
-[ebp-0x18] -> Pointer to start of info header
+bottom of                                                        top of
+memory                                                           memory
+esp +	0x1c	          0x20	       0x34     0x3c
+		pointer	to     pointer to	   ebp    pointer to
+		start of bmp   the start 			  file data in
+		info header    of file data			  .globals
 
 3) The exploit
 The exploit can be seen in the file www-exploit.c.
@@ -85,7 +82,6 @@ The exploit can be seen in the file www-exploit.c.
 +-----------------------------------+
 | Appendix A - Vulnerable function |
 +-----------------------------------+
-0804d295 <img_read>:
  804d295:	55                   	push   ebp
  804d296:	89 e5                	mov    ebp,esp
  804d298:	83 ec 48             	sub    esp,0x48
@@ -128,9 +124,9 @@ The exploit can be seen in the file www-exploit.c.
  804d2f5:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  804d2f8:	8b 00                	mov    eax,DWORD PTR [eax]
  ; -- START ERROR RETURN --
+ ; Malloc failed if this is entered
  804d2fa:	85 c0                	test   eax,eax
  804d2fc:	75 16                	jne    804d314 <img_read+0x7f>
- ; Point to file extension
  804d2fe:	c7 04 24 48 e3 04 08 	mov    DWORD PTR [esp],0x804e348
  804d305:	e8 c6 b6 ff ff       	call   80489d0 <perror@plt>
  804d30a:	b8 ff ff ff ff       	mov    eax,0xffffffff
@@ -157,7 +153,8 @@ The exploit can be seen in the file www-exploit.c.
  804d34c:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d351:	e9 a2 01 00 00       	jmp    804d4f8 <img_read+0x263>
  ; -- END ERROR RETURN --
- ; Check if the extension is bmp and return if it isn't
+ ; Check if the extension is bmp and return if it isn't. Since the file
+ ; extension isn't bmp in the exploit this exit is used
  804d356:	c7 44 24 04 90 e3 04 	mov    DWORD PTR [esp+0x4],0x804e390
  804d35d:	08 
  804d35e:	8d 45 d2             	lea    eax,[ebp-0x2e]
@@ -174,10 +171,6 @@ The exploit can be seen in the file www-exploit.c.
  ; -- END ERROR RETURN --
  804d385:	c7 44 24 04 00 00 00 	mov    DWORD PTR [esp+0x4],0x0
  ...
- 804d4e5:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
- 804d4ea:	c7 04 24 e9 e3 04 08 	mov    DWORD PTR [esp],0x804e3e9
- 804d4f1:	ff d0                	call   eax
- 804d4f3:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d4f8:	c9                   	leave  
  804d4f9:	c3                   	ret    
  804d4fa:	90                   	nop
@@ -275,7 +268,6 @@ The exploit can be seen in the file www-exploit.c.
  ; -- START ERROR --
  804d0d4:	a1 38 0b 05 08       	mov    eax,ds:0x8050b38
  804d0d9:	c7 04 24 36 e3 04 08 	mov    DWORD PTR [esp],0x804e336
- ; We are gonna exit to a specific function here in the exploit
  804d0e0:	ff d0                	call   eax
  804d0e2:	b8 ff ff ff ff       	mov    eax,0xffffffff
  804d0e7:	e9 5e 01 00 00       	jmp    804d24a <parse_v3+0x24e>
@@ -283,7 +275,6 @@ The exploit can be seen in the file www-exploit.c.
  ; Allocate enough space for the image here
  804d0ec:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
  ...
- 804d245:	b8 00 00 00 00       	mov    eax,0x0
  804d24a:	83 c4 34             	add    esp,0x34
  804d24d:	5b                   	pop    ebx
  804d24e:	5d                   	pop    ebp
